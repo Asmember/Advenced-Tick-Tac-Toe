@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="staticContent/style.css">
+    <title>Spiel gegen - </title>
+</head>
+<body>
+    <div class="starfield center">
+        <h1 id="NameRival">Name Gegner</h1>
+    </div>
+    <div class="gamefield center">
+        <table class="game">
+            <tr>
+                <th class="borderright borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom" onclick="clickHandler(0,0)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(0,1)"></th>
+                            <th class="borderbottom" onclick="clickHandler(0,2)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop" onclick="clickHandler(0,3)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(0,4)"></th>
+                            <th class="borderbottom" onclick="clickHandler(0,5)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright" onclick="clickHandler(0,6)"></th>
+                            <th class="borderright" onclick="clickHandler(0,7)"></th>
+                            <th onclick="clickHandler(0,8)"></th>
+                        </tr>
+                    </table>
+                </th>
+                <th  class="borderright borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom" onclick="clickHandler(1,0)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(1,1)"></th>
+                            <th class="borderbottom" onclick="clickHandler(1,2)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop" onclick="clickHandler(1,3)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(1,4)"></th>
+                            <th class="borderbottom" onclick="clickHandler(1,5)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright" onclick="clickHandler(1,6)"></th>
+                            <th class="borderright" onclick="clickHandler(1,7)"></th>
+                            <th onclick="clickHandler(1,8)"></th>
+                        </tr>
+                    </table>
+                </th>
+                <th class="borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom" onclick="clickHandler(2,0)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(2,1)"></th>
+                            <th class="borderbottom" onclick="clickHandler(2,2)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop" onclick="clickHandler(2,3)"></th>
+                            <th class="borderright borderbottom" onclick="clickHandler(2,4)"></th>
+                            <th class="borderbottom" onclick="clickHandler(2,5)"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright" onclick="clickHandler(2,6)"></th>
+                            <th class="borderright" onclick="clickHandler(2,7)"></th>
+                            <th onclick="clickHandler(2,8)"></th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th  class="borderright borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright"></th>
+                            <th class="borderright"></th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </th>
+                <th  class="borderright borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright"></th>
+                            <th class="borderright"></th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </th>
+                <th class="borderbottom">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright"></th>
+                            <th class="borderright"></th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th class="borderright">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright"></th>
+                            <th class="borderright"></th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </th>
+                <th class="borderright">
+                    <table class="smallfield">
+                        <tr>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop"></th>
+                            <th class="borderright borderbottom"></th>
+                            <th class="borderbottom"></th>
+                        </tr>
+                        <tr>
+                            <th class="borderright"></th>
+                            <th class="borderright"></th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </th>
+                <th>
+                    <table class="smallfield active">
+                        <tr>
+                            <th class="borderright borderbottom">O</th>
+                            <th class="borderright borderbottom">X</th>
+                            <th class="borderbottom">O</th>
+                        </tr>
+                        <tr>
+                            <th class="borderright borderbottom bordertop">X</th>
+                            <th class="borderright borderbottom">O</th>
+                            <th class="borderbottom">X</th>
+                        </tr>
+                        <tr>
+                            <th class="borderright">O</th>
+                            <th class="borderright">X</th>
+                            <th>O</th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        const clickHandler = (bigField, smallField) => {
+            alert([bigField, smallField]);
+        }
+    </script>
+</body>
+</html>
