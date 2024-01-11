@@ -1,36 +1,21 @@
-
-body table {
+table {
+    border-collapse: collapse;
+    border-style: hidden;
     font-size: 35pt;
+    margin:10px;
 }
 
-.smallfield th {
-    height: 60px;
+table th table th {
     width: 60px;
+    height: 60px;
+}
+
+table th {
+    border: 2px solid black;
 }
 
 .center {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-table {
-    border-collapse: collapse;
-    margin:10px;
-}
-
-.smallfield.active {
-    border: solid 2px red;
-}
-
-.borderright {
-    border-right: solid 2px black;
-}
-
-.borderbottom {
-    border-bottom: solid 2px black;
-}
-
-.bordertop {
-    border-top: solid 2px black;
 }
