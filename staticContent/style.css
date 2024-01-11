@@ -19,3 +19,26 @@ table th {
     justify-content: center;
     align-items: center;
 }
+
+body {
+    height: auto;
+    width: auto;
+}
+
+.centeredMain {
+    border: 2px solid black;
+    border-radius: 15px;
+    height: 20%;
+}
+
+.hidden {
+    display: none;
+}
+
+.inline {
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 15px;
+    padding: 10px;
+    margin: 10px;
+}

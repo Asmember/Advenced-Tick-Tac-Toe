@@ -3,9 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="staticContent/style.css">
     <title>Advanced Tick-Tac-Toe</title>
 </head>
 <body>
+    <div class="center">
+        <h1>Advanced Tick-Tac-Toe</h1>
+    </div>
+    <div class="center centeredMain">
+        <div>
+            <button id="SinglePlayerButton" style="padding: 10px;" onclick="showSingleplayer()">Singleplayer</button>
+            <button id="MultiPlayerButton" style="padding: 10px;" onclick="showMultiplayer()">Multiplayer</button>
     
+            <div id="singleplayerThingy" class="singleplayer hidden">
+                <button onclick="goBack()">Zurück</button>
+
+                <div id="newGame" class="newGame inline">
+                    <h2>New Game</h2>
+                    <button class="center" onclick="NewLocalGame()">Let's Go!</button>
+                </div>
+                <div class="loadGame inline">
+                    <h2>Load Game</h2>
+                    <button class="center" onclick="LoadLocalGame()">Let's Go!</button>
+                </div>
+            </div>
+    
+            <div id="multiplayerThingy" class="multiplayer hidden">
+                <button onclick="goBack()" style="float: top;">Zurück</button>
+                
+                <div class="newOnline inline">
+                    <h2>New Online Game</h2>
+                    <button onclick="NewOnlineGame()">Let's Go!</button>
+                </div>
+                <div class="joinOnline inline">
+                    <h2>Join Online Game</h2>
+                    <input type="text" name="Code">
+                    <button onclick="JoinOnlineGame()">Let's Go!</button>
+                </div>
+                <div class="loadGame inline">
+                    <h2>Load Online Game</h2>
+                    <button onclick="LoadOnlineGame()">Let's Go!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NewLocalGame = () => {
+            alert("New Local Game");
+        }
+
+        const LoadLocalGame = () => {
+            alert("Load Local Game");
+        }
+
+        const NewOnlineGame = () => {
+            alert("New Online Game");
+        }
+
+        const JoinOnlineGame = () => {
+            alert("Join Online Game");
+        }
+
+        const LoadOnlineGame = () => {
+            alert("Load Online Game");
+        }
+
+        const showSingleplayer = () => {
+            document.getElementById('singleplayerThingy').className = 'singleplayer';
+            document.getElementById('SinglePlayerButton').className = 'hidden';
+            document.getElementById('MultiPlayerButton').className = 'hidden';
+        }
+
+        const showMultiplayer = () => {
+            document.getElementById('multiplayerThingy').className = 'multiplayer';
+            document.getElementById('SinglePlayerButton').className = 'hidden';
+            document.getElementById('MultiPlayerButton').className = 'hidden';
+        }
+        
+        const goBack = () => {
+            document.getElementById('multiplayerThingy').className = 'hidden';
+            document.getElementById('singleplayerThingy').className = 'hidden';
+            document.getElementById('SinglePlayerButton').className = '';
+            document.getElementById('MultiPlayerButton').className = '';
+        }
+    </script>
 </body>
 </html>
