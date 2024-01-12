@@ -8,7 +8,11 @@
 </head>
 <body>
     <div class="center">
-        <h1>Advanced Tick-Tac-Toe</h1>
+        <h1 style="display: block;">Advanced Tick-Tac-Toe</h1>
+    </div>
+    <div class="center">
+        <label for="nameInput">Name:</label>
+        <input type="text" name="nameInput">
     </div>
     <div class="center centeredMain">
         <div>
@@ -20,7 +24,7 @@
 
                 <div id="newGame" class="newGame inline">
                     <h2>New Game</h2>
-                    <button class="center" onclick="NewLocalGame()">Let's Go!</button>
+                    <button class="center" onclick="NewGame('Local')">Let's Go!</button>
                 </div>
                 <div class="loadGame inline">
                     <h2>Load Game</h2>
@@ -33,7 +37,7 @@
                 
                 <div class="newOnline inline">
                     <h2>New Online Game</h2>
-                    <button onclick="NewOnlineGame()">Let's Go!</button>
+                    <button onclick="NewGame('Online')">Let's Go!</button>
                 </div>
                 <div class="joinOnline inline">
                     <h2>Join Online Game</h2>
@@ -47,34 +51,42 @@
             </div>
         </div>
     </div>
-
+    %SetUrl%
     <script>
-        const NewLocalGame = () => {
-            alert("New Local Game");
-        }
 
+        // const start = () => {
+        //     AjaxListener = new XMLHttpRequest();        // new AJAX object
+        //     AjaxListener.onreadystatechange=readAjax;   // start readAjax when response is ready
+        //     //setInterval(update,1000);             // run update() every second
+            
+        //     update("0");
+        // }
+        
+        const NewGame = (type) => {
+            // AjaxListener.open("POST",url,true);  // asynchronous GET-Request
+            // AjaxListener.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            // AjaxListener.send("create_Game="+type);
+            alert("New ".concat(type, " Game"));
+        }
+        
         const LoadLocalGame = () => {
             alert("Load Local Game");
         }
-
-        const NewOnlineGame = () => {
-            alert("New Online Game");
-        }
-
+        
         const JoinOnlineGame = () => {
             alert("Join Online Game");
         }
-
+        
         const LoadOnlineGame = () => {
             alert("Load Online Game");
         }
-
+        
         const showSingleplayer = () => {
             document.getElementById('singleplayerThingy').className = 'singleplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';
             document.getElementById('MultiPlayerButton').className = 'hidden';
         }
-
+        
         const showMultiplayer = () => {
             document.getElementById('multiplayerThingy').className = 'multiplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';
@@ -87,6 +99,8 @@
             document.getElementById('SinglePlayerButton').className = '';
             document.getElementById('MultiPlayerButton').className = '';
         }
-    </script>
+
+        // window.onload = start;
+        </script>
 </body>
 </html>

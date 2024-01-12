@@ -4,18 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="staticContent/style.css">
-    <title>Spiel gegen - </title>
+%Title%
 </head>
 <body>
     <div class="starfield center">
-        <h1 id="NameRival">Name Gegner</h1>
+%NameOponent%
     </div>
     <div class="gamefield center">
 %GameField%
     </div>
+%GameData%
     <script>
         const clickHandler = (bigField, smallField, id) => {
-            alert([bigField, smallField, id]);
+            var clickedField = document.getElementById(id);
+            if(clickedField.innerHTML != "" || ! isEqualsArray(bigField, lastMove)){
+                return;
+            }
+
+            switch(gameType) {
+                case "Local":
+                    clickedField.innerHTML = currentPlayer;
+                    currentPlayer = (currentPlayer == playerFigures[0]) ? playerFigures[1] : playerFigures[0];
+                    break;
+                case "Bot":
+                    break;
+                case "Online":
+                    break;
+            }
+
+            document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;"
+            lastMove = smallField;
+            document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: " + spotLight + ";"
+            // Send lastMove and playerchange to Server
+
+        }
+
+        const isEqualsArray = (arrA, arrB) => {
+            if (arrA.length != arrB.length) {
+                return false; 
+            }
+            let isSameAll = arrA.every((valueA, indexA) => valueA == arrB[indexA]);
+            return isSameAll;
         }
     </script>
 </body>
