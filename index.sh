@@ -1,16 +1,17 @@
 #!/bin/bash
 
+echo -ne "Content-type: text/html; charset=utf-8\n\n"
 saveDatadir=saveData
 
 read querystring
 eval "${querystring//&/;}"
 
-if [[ -n $create_Game ]] then
+if [[ -n $create_Game ]]; then
     if [ ! -d "$saveDatadir/$name/games" ]; then
         if [ ! -d "$saveDatadir/$name" ]; then
             mkdir -p "$saveDatadir/$name";
         fi
-    
+
         mkdir "$saveDatadir/$name/games";
     fi
     numberOfFiles=`ls -1q | wc -l`
@@ -21,7 +22,6 @@ if [[ -n $create_Game ]] then
     echo "<script>"
     echo "  window.location.href = \"/../game.sh?Player=$name&SaveState=$numberOfFiles\""
     echo "</script>"
-
 else
     while IFS= read -r line
     do
@@ -29,6 +29,11 @@ else
             echo "<script>"
             echo "  var url = \"$SCRIPT_NAME\"";
             echo "</script>"
+			
+		elif [[ "$line" == *"%Style%"* ]]; then
+			echo "<style>"
+			cat "staticContent/style.css"
+			echo "</style>"
         else
             echo "$line"
         fi

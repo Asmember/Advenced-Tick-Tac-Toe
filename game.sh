@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo -ne "Content-type: text/html; charset=utf-8\n\n"
+
 saveDatadir=saveData
 name=Testing
 numberOfFiles=0
@@ -24,7 +26,7 @@ do
                     echo "<tr>"
                     for iiii in $(seq 0 2);
                     do
-                        echo "<th id=\"$id\" onclick=\"clickHandler([$i,$ii],[$iii,$iiii],$id)\">$(jq -r ".GameField[$i].[$ii].[$iii].[$iiii]" $gameSaveFile)</th>"
+                        echo "<th id=\"$id\" onclick=\"clickHandler([$i,$ii],[$iii,$iiii],$id)\">$(jq -r ".GameField[$i][$ii][$iii][$iiii]" $gameSaveFile)</th>"
                         #                                           Big Field, Small Field
                         id=$(($id+1))
                     done
@@ -36,6 +38,10 @@ do
         done
         echo "</table>"
 
+	elif [[ "$line" == *"%Style%"* ]]; then
+		echo "<style>"
+		cat "staticContent/style.css"
+		echo "</style>"
     elif [[ "$line" == *"%GameData%"* ]]; then
         echo "<script>"
         echo "   var gameType = \"$(jq -r ".GameType" $gameSaveFile)\";"
