@@ -1,12 +1,18 @@
 #!/bin/bash
 
-echo -ne "Content-type: text/html; charset=utf-8\n\n"
 saveDatadir=saveData
+errorLog=error.log
 
 read querystring
 eval "${querystring//&/;}"
 
 if [[ -n $create_Game ]]; then
+
+    if [[ ! -n $nameInput ]]; then
+        echo "No Name Input" >> errorLog
+        return
+    fi
+
     if [ ! -d "$saveDatadir/$name/games" ]; then
         if [ ! -d "$saveDatadir/$name" ]; then
             mkdir -p "$saveDatadir/$name";
@@ -18,10 +24,6 @@ if [[ -n $create_Game ]]; then
     cp "$saveDatadir/defaultsaveData.json" "$saveDatadir/$name/games/$numberOfFiles.json"
 
     jq ".GameType |= \"$create_Game\"" "$saveDatadir/$name/games/$numberOfFiles.json" # Sets the GameType to requested Game Type
-
-    echo "<script>"
-    echo "  window.location.href = \"/../game.sh?Player=$name&SaveState=$numberOfFiles\""
-    echo "</script>"
 else
     while IFS= read -r line
     do
@@ -34,6 +36,10 @@ else
 			echo "<style>"
 			cat "staticContent/style.css"
 			echo "</style>"
+
+        elif [[ "$line" == *"%BeginForm%"* ]]; then
+            echo "<form method="post" action="$SCRIPT_NAME">"
+
         else
             echo "$line"
         fi

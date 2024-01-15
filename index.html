@@ -10,77 +10,51 @@
     <div class="center">
         <h1 style="display: block;">Advanced Tick-Tac-Toe</h1>
     </div>
-    <div class="center">
-        <label for="nameInput">Name:</label>
-        <input type="text" name="nameInput">
-    </div>
-    <div class="center centeredMain">
-        <div>
-            <button id="SinglePlayerButton" style="padding: 10px;" onclick="showSingleplayer()">Singleplayer</button>
-            <button id="MultiPlayerButton" style="padding: 10px;" onclick="showMultiplayer()">Multiplayer</button>
-    
-            <div id="singleplayerThingy" class="singleplayer hidden">
-                <button onclick="goBack()">Zurück</button>
+%BeginForm%
+        <div class="center">
+            <label for="nameInput">Name:</label>
+            <input type="text" name="nameInput" required>
+        </div>
+        <div class="center centeredMain">
+            <div>
+                <button id="SinglePlayerButton" style="padding: 10px;" onclick="showSingleplayer()">Singleplayer</button>
+                <button id="MultiPlayerButton" style="padding: 10px;" onclick="showMultiplayer()">Multiplayer</button>
+        
+                <div id="singleplayerThingy" class="singleplayer hidden">
+                    <button onclick="goBack()">Zurück</button>
 
-                <div id="newGame" class="newGame inline">
-                    <h2>New Game</h2>
-                    <button class="center" onclick="NewGame('Local')">Let's Go!</button>
+                    <div id="newGame" class="newGame inline">
+                        <h2>New Game</h2>
+                        <button class="center" name="NewLocalGame">Let's Go!</button>
+                    </div>
+                    <div class="loadGame inline">
+                        <h2>Load Game</h2>
+                        <button class="center" name="LoadLocalGame">Let's Go!</button>
+                    </div>
                 </div>
-                <div class="loadGame inline">
-                    <h2>Load Game</h2>
-                    <button class="center" onclick="LoadLocalGame()">Let's Go!</button>
-                </div>
-            </div>
-    
-            <div id="multiplayerThingy" class="multiplayer hidden">
-                <button onclick="goBack()" style="float: top;">Zurück</button>
-                
-                <div class="newOnline inline">
-                    <h2>New Online Game</h2>
-                    <button onclick="NewGame('Online')">Let's Go!</button>
-                </div>
-                <div class="joinOnline inline">
-                    <h2>Join Online Game</h2>
-                    <input type="text" name="Code">
-                    <button onclick="JoinOnlineGame()">Let's Go!</button>
-                </div>
-                <div class="loadGame inline">
-                    <h2>Load Online Game</h2>
-                    <button onclick="LoadOnlineGame()">Let's Go!</button>
+        
+                <div id="multiplayerThingy" class="multiplayer hidden">
+                    <button onclick="goBack()" style="float: top;">Zurück</button>
+                    
+                    <div class="newOnline inline">
+                        <h2>New Online Game</h2>
+                        <button name="NewOnlineGame">Let's Go!</button>
+                    </div>
+                    <div class="joinOnline inline">
+                        <h2>Join Online Game</h2>
+                        <input type="text" name="Code">
+                        <button name="JoinOnlineGame">Let's Go!</button>
+                    </div>
+                    <div class="loadGame inline">
+                        <h2>Load Online Game</h2>
+                        <button name="LoadOnlineGame">Let's Go!</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 %SetUrl%
-    <script>
-
-        // const start = () => {
-        //     AjaxListener = new XMLHttpRequest();        // new AJAX object
-        //     AjaxListener.onreadystatechange=readAjax;   // start readAjax when response is ready
-        //     //setInterval(update,1000);             // run update() every second
-            
-        //     update("0");
-        // }
-        
-        const NewGame = (type) => {
-            // AjaxListener.open("POST",url,true);  // asynchronous GET-Request
-            // AjaxListener.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            // AjaxListener.send("create_Game="+type);
-            alert("New ".concat(type, " Game"));
-        }
-        
-        const LoadLocalGame = () => {
-            alert("Load Local Game");
-        }
-        
-        const JoinOnlineGame = () => {
-            alert("Join Online Game");
-        }
-        
-        const LoadOnlineGame = () => {
-            alert("Load Online Game");
-        }
-        
+    <script>      
         const showSingleplayer = () => {
             document.getElementById('singleplayerThingy').className = 'singleplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';
@@ -99,8 +73,6 @@
             document.getElementById('SinglePlayerButton').className = '';
             document.getElementById('MultiPlayerButton').className = '';
         }
-
-        // window.onload = start;
-        </script>
+    </script>
 </body>
 </html>
