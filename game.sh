@@ -90,5 +90,5 @@ check_three_in_a_row() {
         return 0
     fi
 
-    return 1
+    return 1 
 }

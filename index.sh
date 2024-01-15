@@ -43,5 +43,5 @@ else
         else
             echo "$line"
         fi
-    done < "index.html"
+    done < "index.html" 
 fi
