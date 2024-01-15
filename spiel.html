@@ -42,7 +42,16 @@
             lastMove = smallField;
             document.getElementById(smallField[0] + "|" + smallField[1]).style = "background-color: " + spotLight + ";"
             // Send lastMove and playerchange to Server
+            
+            sendGameMove(bigField, smallField, id);
 
+        }
+
+        const sendGameMove = (bigField, smallField, id) => {
+            var ajax = new XMLHttpRequest();
+            const data = JSON.stringify({ "smallField": smallField, "bigField": bigField, "id": id, "numberOfFiles": numberOfFiles, "NameInput": NameInput });
+            ajax.open("POST", "../Advanced-Tick-Tac-Toe/game.sh", true);
+            ajax.send(data);
         }
 
         const isEqualsArray = (arrA, arrB) => {
