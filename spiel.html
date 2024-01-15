@@ -17,8 +17,12 @@
     <script>
         const clickHandler = (bigField, smallField, id) => {
             var clickedField = document.getElementById(id);
-            if(clickedField.innerHTML != "" || ! isEqualsArray(bigField, lastMove)){
-                return;
+
+            if(lastMove.length != 0){
+                if(clickedField.innerHTML != "" || (! isEqualsArray(bigField, lastMove))){
+                    return;
+                }
+
             }
 
             switch(gameType) {
@@ -32,9 +36,11 @@
                     break;
             }
 
-            document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;"
+            if(lastMove.length != 0){
+                document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;"
+            }
             lastMove = smallField;
-            document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: " + spotLight + ";"
+            document.getElementById(smallField[0] + "|" + smallField[1]).style = "background-color: " + spotLight + ";"
             // Send lastMove and playerchange to Server
 
         }

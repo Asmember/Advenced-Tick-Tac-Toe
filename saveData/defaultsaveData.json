@@ -6,6 +6,7 @@
     ],
     "PlayerFigurs":["X", "O"],
     "CurrentPlayer": "X",
+    "BackGroundSpotlightColor": "#409987",
     "LastMove": [],
     "GameType": "",
     "GameField": [

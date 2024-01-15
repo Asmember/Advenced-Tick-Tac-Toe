@@ -3,10 +3,11 @@
 echo -ne "Content-type: text/html; charset=utf-8\n\n"
 
 saveDatadir=saveData
-name=Testing
-numberOfFiles=0
 
-gameSaveFile="$saveDatadir/$name/games/$numberOfFiles.json"
+read querystring
+eval "${querystring//&/;}"
+
+gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
 
 # reads Game html Template and then replaces the placeholder with the game grid
 while IFS= read -r line
@@ -49,7 +50,9 @@ do
         echo "   var lastMove = $(jq -crj .LastMove $gameSaveFile);"
         echo "   var playerFigures = $(jq -crj .PlayerFigurs $gameSaveFile);"
         echo "   var spotLight =\"$(jq -r ".BackGroundSpotlightColor" $gameSaveFile)\";"
-        echo "   document.getElementById(lastMove[0] + \"|\" + lastMove[1]).style = \"background-color: \" + spotLight + \";\"";
+        echo "   if(lastMove.length != 0){"
+        echo "      document.getElementById(lastMove[0] + \"|\" + lastMove[1]).style = \"background-color: \" + spotLight + \";\"";
+        echo "   }"
         echo "</script>"
 
     elif [[ "$line" == *"%Title%"* ]]; then

@@ -5,6 +5,10 @@ table {
     margin:10px;
 }
 
+.button {
+    display: inline-block;
+}
+
 table th table th {
     width: 60px;
     height: 60px;

@@ -17,15 +17,15 @@
         </div>
         <div class="center centeredMain">
             <div>
-                <button id="SinglePlayerButton" style="padding: 10px;" onclick="showSingleplayer()">Singleplayer</button>
-                <button id="MultiPlayerButton" style="padding: 10px;" onclick="showMultiplayer()">Multiplayer</button>
+                <div class="button" id="SinglePlayerButton" style="padding: 10px;" onclick="showSingleplayer()">Singleplayer</div>
+                <div class="button" id="MultiPlayerButton" style="padding: 10px;" onclick="showMultiplayer()">Multiplayer</div>
         
                 <div id="singleplayerThingy" class="singleplayer hidden">
-                    <button onclick="goBack()">Zurück</button>
+                    <div class="button" onclick="goBack()">Zurück</div>
 
                     <div id="newGame" class="newGame inline">
                         <h2>New Game</h2>
-                        <button class="center" name="NewLocalGame">Let's Go!</button>
+                        <button class="center" name="NewLocalGame" value="NewLocalGame">Let's Go!</button>
                     </div>
                     <div class="loadGame inline">
                         <h2>Load Game</h2>
@@ -34,7 +34,7 @@
                 </div>
         
                 <div id="multiplayerThingy" class="multiplayer hidden">
-                    <button onclick="goBack()" style="float: top;">Zurück</button>
+                    <div class="button" onclick="goBack()">Zurück</div>
                     
                     <div class="newOnline inline">
                         <h2>New Online Game</h2>
