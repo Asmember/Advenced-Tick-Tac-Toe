@@ -1,27 +1,49 @@
 #!/bin/bash
 
+##################################################################################
+# #
+# #                             Autor: Armin Scheu
+# #
+# #                            Erstellt: Januar 2024
+# #
+##################################################################################
+
+# Einstellungen
+saveDatadir=saveData
+cssFile="staticContent/style.css"
+gameHtmlTemplate="templates/spiel.html"
+ErrorHTMLTemplate="templates/error.html"
+
+# Content Type Setzen
 echo -ne "Content-type: text/html; charset=utf-8\n\n"
 
-saveDatadir=saveData
-
+# eingabe in das script
 read querystring
-
 if [[ "$querystring" != *"="* ]]; then
-    echo "Test"
-    NameInput= `jq ".NameInput" <<< $querystring`
-    numberOfFiles= `jq ".numberOfFiles" <<< $querystring`
+    NameInput=`echo "$querystring" | jq ".NameInput"`
+    numberOfFiles=`echo "$querystring" | jq ".numberOfFiles"`
 else
     eval "${querystring//&/;}"
 fi
 
-echo "$querystring"
 
 gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
+
+# wenn warum auch immer die Save File nicht existiert, 
+# anstatt die logs voll zu spammen bekommt man eine Error 
+# Website auf der der Fehler beschrieben wird
+if [[ ! -f "$gameSaveFile" ]]; then
+    ThrowErrorScreen "Save File \"$gameSaveFile\" does not exist"
+    return
+fi
+
+# Gespeicherte Daten aus save File auslesen
+saveFileContent=`cat "$gameSaveFile"`
 
 if [[ -n $smallField ]]; then
     echo ""
 else
-    # reads Game html Template and then replaces the placeholder with the game grid
+    # Liest das HTML Template und füllt die platzhalter mit inhalt
     while IFS= read -r line
     do
         if [[ "$line" == *"%GameField%"* ]]; then
@@ -39,7 +61,7 @@ else
                         echo "<tr>"
                         for iiii in $(seq 0 2);
                         do
-                            echo "<th id=\"$id\" onclick=\"clickHandler([$i,$ii],[$iii,$iiii],$id)\">$(jq -r ".GameField[$i][$ii][$iii][$iiii]" $gameSaveFile)</th>"
+                            echo "<th id=\"$id\" onclick=\"clickHandler([$i,$ii],[$iii,$iiii],$id)\">$(echo "$saveFileContent" | jq -r ".GameField[$i][$ii][$iii][$iiii]")</th>"
                             #                                           Big Field, Small Field
                             id=$(($id+1))
                         done
@@ -51,34 +73,44 @@ else
             done
             echo "</table>"
 
+        # importiert die css datei in die Website, weil ich das installieren so einfach wie möglich gestalten möchte 
+        # und usern nicht zutraue das sie es hinbekommen css dateien in /var/www/html abzulegen
         elif [[ "$line" == *"%Style%"* ]]; then
             echo "<style>"
-            cat "staticContent/style.css"
+            cat "$cssFile"
             echo "</style>"
-        elif [[ "$line" == *"%GameData%"* ]]; then
-            echo "<script>"
-            echo "   var gameType = \"$(jq -r ".GameType" $gameSaveFile)\";"
-            echo "   var currentPlayer = \"$(jq -r ".CurrentPlayer" $gameSaveFile)\";"
-            echo "   var lastMove = $(jq -crj .LastMove $gameSaveFile);"
-            echo "   var playerFigures = $(jq -crj .PlayerFigurs $gameSaveFile);"
-            echo "   var spotLight =\"$(jq -r ".BackGroundSpotlightColor" $gameSaveFile)\";"
-            echo "   var NameInput =\"$NameInput\";"
-            echo "   var numberOfFiles =\"$numberOfFiles\";"
-            echo "   if(lastMove.length != 0){"
-            echo "      document.getElementById(lastMove[0] + \"|\" + lastMove[1]).style = \"background-color: \" + spotLight + \";\"";
-            echo "   }"
-            echo "</script>"
-
-        elif [[ "$line" == *"%Title%"* ]]; then
-            echo "<title>$(jq -r ".GameType" $gameSaveFile) Game : $(jq -r ".Players[0]" $gameSaveFile) - $(jq -r ".Players[1]" $gameSaveFile)</title>"
         
-        elif [[ "$line" == *"NameOponent"* ]]; then
-            echo "<h1 id="NameRival">$(jq -r ".Players[0]" $gameSaveFile) VS $(jq -r ".Players[1]" $gameSaveFile)</h1>"
+        # Setzt benötigte Javascript Varriablen
+        # Geplant ist dies durch eine Ajax Anfrage zu ersetzen
+        elif [[ "$line" == *"%GameData%"* ]]; then
+            cat << "EOF
+            <script>
+               var gameType = \"$(echo "$saveFileContent" | jq -r ".GameType")\";
+               var currentPlayer = \"$(echo "$saveFileContent" | jq -r ".CurrentPlayer")\";
+               var lastMove = $(echo "$saveFileContent" | jq -r ".LastMove");
+               var playerFigures = $(echo "$saveFileContent" | jq -r ".PlayerFigurs");
+               var spotLight =\"$(echo "$saveFileContent" | jq -r ".BackGroundSpotlightColor")\";
+               var NameInput =\"$NameInput\";
+               var numberOfFiles =\"$numberOfFiles\";
+               if(lastMove.length != 0){
+                  document.getElementById(lastMove[0] + \"|\" + lastMove[1]).style = \"background-color: \" + spotLight + \";\";
+               }
+            </script>
+            EOF"
 
+        # Setzt den Titel der Game Seite
+        elif [[ "$line" == *"%Title%"* ]]; then
+            echo "<title>$(echo "$saveFileContent" | jq -r ".GameType") Game : $(echo "$saveFileContent" | jq -r ".Players[0]") - $(echo "$saveFileContent" | jq -r ".Players[1]")</title>"
+        
+        # Setzt die Überschrift der Game Seite
+        elif [[ "$line" == *"NameOponent"* ]]; then
+            echo "<h1 id="NameRival">$(echo "$saveFileContent" | jq -r ".Players[0]") VS $(echo "$saveFileContent" | jq -r ".Players[1]")</h1>"
+
+        # Gibt alles was nicht platzhalter sind aus
         else
-        echo "$line"
+            echo "$line"
         fi
-    done < "spiel.html"
+    done < "$gameHtmlTemplate"
 fi
 
 check_three_in_a_row() {
@@ -108,4 +140,20 @@ check_three_in_a_row() {
     fi
 
     return 1 
+}
+
+ThrowErrorScreen() {
+    # Makes sure the function is used correctly
+    if [[ ! -n "$1" ]]; then
+        return
+    fi
+
+    while IFS= read -r line
+    do
+        if [[ "$line" == *"%ErrorMessage%"* ]]; then
+            echo "<div class=\"Error\">$1</div>"
+        else
+        echo "$line"
+        fi
+    done < "$ErrorHTMLTemplate"
 }
