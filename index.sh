@@ -12,7 +12,7 @@
 saveDatadir=saveData
 errorLog=error.log
 cssFile="staticContent/style.css"
-indexHTMLTemplate="template/index.html"
+indexHTMLTemplate="templates/index.html"
 
 # Content Type Setzen
 echo -ne "Content-type: text/html; charset=utf-8\n\n"
@@ -60,15 +60,15 @@ if [[ -n "$NewLocalGame" ]]; then
     # Erstellt eine Form, welche direkt abgeschickt wird
     # leitet an das Game script weiter
     # überträgt wichtige informationen and das game script
-    cat << "EOF
-    <form name=\"instasubmit\" action=\"/cgi-bin/Advanced-Tick-Tac-Toe/game.sh\" method=\"post\">
-        <input type=\"hidden\" name=\"NameInput\" value=\"$nameInput\">
-        <input type=\"hidden\" name=\"numberOfFiles\" value=\"$numberOfFiles\">
+    cat << EOF
+    <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
+        <input type="hidden" name="NameInput" value="$nameInput">
+        <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
     </form>
     <script>
-        document.forms[\"instasubmit\"].submit()
+        document.forms["instasubmit"].submit()
     </script>
-    EOF"
+EOF
 else
     # Liest das HTML Template und füllt die platzhalter mit inhalt
     while IFS= read -r line

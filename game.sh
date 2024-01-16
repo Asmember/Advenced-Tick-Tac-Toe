@@ -19,15 +19,32 @@ echo -ne "Content-type: text/html; charset=utf-8\n\n"
 
 # eingabe in das script
 read querystring
+
 if [[ "$querystring" != *"="* ]]; then
-    NameInput=`echo "$querystring" | jq ".NameInput"`
-    numberOfFiles=`echo "$querystring" | jq ".numberOfFiles"`
+    # Bash kann nicht gescheid mit json umgehen, deshalb muss ich manuell die variablen aus json herauspopeln
+    # dazu verwende ich eines der am wenigst performanten packages auf diesem planeten, jq, ich liebe es
+    NameInput=`echo "$querystring" | jq -r ".NameInput"`
+    numberOfFiles=`echo "$querystring" | jq -r ".numberOfFiles"`
+    smallFieldX=`echo "$querystring" | jq ".smallField[0]"`
+    smallFieldY=`echo "$querystring" | jq ".smallField[1]"`
+    bigFieldX=`echo "$querystring" | jq ".bigField[0]"`
+    bigFieldY=`echo "$querystring" | jq ".bigField[1]"`
+    currentPlayer=`echo "$querystring" | jq ".currentPlayer"`
+    nextPlayer=`echo "$querystring" | jq ".nextPlayer"`
+    id=`echo "$querystring" | jq ".id"`
+
+    gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
+
+    # spiel Speicherstand ändern
+    echo `jq ".LastMove[0] |= $smallFieldX" "$gameSaveFile"` > "$gameSaveFile"
+    echo `jq ".LastMove[1] |= $smallFieldY" "$gameSaveFile"` > "$gameSaveFile"
+    echo `jq ".CurrentPlayer |= $nextPlayer" "$gameSaveFile"` > "$gameSaveFile"
+    echo `jq ".GameField[$bigFieldX][$bigFieldY][$smallFieldX][$smallFieldY] |= $currentPlayer" "$gameSaveFile"` > "$gameSaveFile"
 else
     eval "${querystring//&/;}"
+
+    gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
 fi
-
-
-gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
 
 # wenn warum auch immer die Save File nicht existiert, 
 # anstatt die logs voll zu spammen bekommt man eine Error 
@@ -83,20 +100,22 @@ else
         # Setzt benötigte Javascript Varriablen
         # Geplant ist dies durch eine Ajax Anfrage zu ersetzen
         elif [[ "$line" == *"%GameData%"* ]]; then
-            cat << "EOF
+            cat << EOF
             <script>
-               var gameType = \"$(echo "$saveFileContent" | jq -r ".GameType")\";
-               var currentPlayer = \"$(echo "$saveFileContent" | jq -r ".CurrentPlayer")\";
+               var gameType = "$(echo "$saveFileContent" | jq -r ".GameType")";
+               var currentPlayer = "$(echo "$saveFileContent" | jq -r ".CurrentPlayer")";
                var lastMove = $(echo "$saveFileContent" | jq -r ".LastMove");
                var playerFigures = $(echo "$saveFileContent" | jq -r ".PlayerFigurs");
-               var spotLight =\"$(echo "$saveFileContent" | jq -r ".BackGroundSpotlightColor")\";
-               var NameInput =\"$NameInput\";
-               var numberOfFiles =\"$numberOfFiles\";
+               var spotLight ="$(echo "$saveFileContent" | jq -r ".BackGroundSpotlightColor")";
+               var NameInput ="$NameInput";
+               var numberOfFiles ="$numberOfFiles";
+               
+               console.log(gameType, currentPlayer, lastMove, playerFigures, spotLight, NameInput, numberOfFiles);
                if(lastMove.length != 0){
-                  document.getElementById(lastMove[0] + \"|\" + lastMove[1]).style = \"background-color: \" + spotLight + \";\";
+                  document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: " + spotLight + ";";
                }
             </script>
-            EOF"
+EOF
 
         # Setzt den Titel der Game Seite
         elif [[ "$line" == *"%Title%"* ]]; then
@@ -153,7 +172,7 @@ ThrowErrorScreen() {
         if [[ "$line" == *"%ErrorMessage%"* ]]; then
             echo "<div class=\"Error\">$1</div>"
         else
-        echo "$line"
+            echo "$line"
         fi
     done < "$ErrorHTMLTemplate"
 }

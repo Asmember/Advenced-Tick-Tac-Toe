@@ -49,7 +49,7 @@
 
         const sendGameMove = (bigField, smallField, id) => {
             var ajax = new XMLHttpRequest();
-            const data = JSON.stringify({ "smallField": smallField, "bigField": bigField, "id": id, "numberOfFiles": numberOfFiles, "NameInput": NameInput });
+            const data = JSON.stringify({ "smallField": smallField, "bigField": bigField, "id": id, "numberOfFiles": numberOfFiles, "NameInput": NameInput, "currentPlayer": currentPlayer, "nextPlayer": (currentPlayer == playerFigures[0]) ? playerFigures[1] : playerFigures[0]});
             ajax.open("POST", "../Advanced-Tick-Tac-Toe/game.sh", true);
             ajax.send(data);
         }
