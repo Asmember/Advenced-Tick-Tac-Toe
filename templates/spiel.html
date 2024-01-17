@@ -11,6 +11,7 @@
         <h1 id="NameRival"></h1>
     </div>
     <a href="index.sh">Zurück zum Hauptmenü</a>
+    <div id="nowPlaying"></div>
     <div id="gamefield" class="gamefield center">
         <div class="loading .center">Loading</br><div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
     </div>
@@ -84,6 +85,7 @@
                 return;
             }
 
+            document.getElementById("nowPlaying").innerText = `Gerade ist "${currentPlayer}" am zug`;
             saveData["LastMove"] = smallField;
             sendGameMove(bigField, smallField, id);
             
@@ -104,7 +106,8 @@
             }
 
             document.getElementById("title").innerText = `${gameType} Game ${players[0]} - ${players[1]}`;
-            document.getElementById("NameRival").innerText = `${players[0]} VS ${players[1]}`;
+            document.getElementById("NameRival").innerText = `${players[0]} [${playerFigures[0]}] VS ${players[1]} [${playerFigures[1]}]`;
+            document.getElementById("nowPlaying").innerText = `Gerade ist "${currentPlayer}" am zug`;
         }
 
         const GetGameDataAndRedrawGame = () => {
@@ -170,22 +173,23 @@
             return isSameAll;
         }
 
+        // schaut nach ob drei der selben characters in einer reihe sind
         function checkThreeInARow(matrix) {
-            // Check rows
+            // Zeilen Prüfen
             for (let row = 0; row < 3; row++) {
                 if (matrix[row][0] === matrix[row][1] && matrix[row][1] === matrix[row][2] && matrix[row][0] !== "") {
                     return matrix[row][0];
                 }
             }
 
-            // Check columns
+            // Spalten Prüfen
             for (let col = 0; col < 3; col++) {
                 if (matrix[0][col] === matrix[1][col] && matrix[1][col] === matrix[2][col] && matrix[0][col] !== "") {
                     return matrix[0][col];
                 }
             }
 
-            // Check diagonals
+            // Diagonalen prüfen
             if (matrix[0][0] === matrix[1][1] && matrix[1][1] === matrix[2][2] && matrix[0][0] !== "") {
                 return matrix[0][0];
             }
@@ -194,7 +198,7 @@
                 return matrix[0][2];
             }
 
-            return null; // No three in a row found
+            return null; // Kiene reihe gefunden
         }
 
         window.onload = GetGameDataAndRedrawGame;
