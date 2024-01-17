@@ -13,7 +13,7 @@
 %BeginForm%
         <div class="center">
             <label for="nameInput">Name:</label>
-            <input type="text" name="nameInput" required>
+            <input type="text" name="nameInput" id="nameInput" required>
         </div>
         <div class="center centeredMain">
             <div>
@@ -25,11 +25,14 @@
 
                     <div id="newGame" class="newGame inline">
                         <h2>New Game</h2>
-                        <button class="center" name="NewLocalGame" value="NewLocalGame">Let's Go!</button>
+                        <button class="center" name="NewGame" value="Local">Let's Go!</button>
                     </div>
                     <div class="loadGame inline">
                         <h2>Load Game</h2>
-                        <button class="center" name="LoadLocalGame">Let's Go!</button>
+                        <button onclick="loadSavedGames('LocalSavedGames')" type="button" class="center" name="LoadLocalGame">Let's Go!</button>
+                    </div>
+                    <div id="LocalSavedGames" class="savedGames">
+                        
                     </div>
                 </div>
         
@@ -38,7 +41,7 @@
                     
                     <div class="newOnline inline">
                         <h2>New Online Game</h2>
-                        <button name="NewOnlineGame">Let's Go!</button>
+                        <button name="NewGame" value="Online">Let's Go!</button>
                     </div>
                     <div class="joinOnline inline">
                         <h2>Join Online Game</h2>
@@ -46,15 +49,49 @@
                         <button name="JoinOnlineGame">Let's Go!</button>
                     </div>
                     <div class="loadGame inline">
-                        <h2>Load Online Game</h2>
-                        <button name="LoadOnlineGame">Let's Go!</button>
+                        <h2>Load Joined Online Game</h2>
+                        <button type="button" onclick="loadSavedGames('OnlineSavedGames')" name="LoadOnlineGame">Let's Go!</button>
+                    </div>
+                    <div id="OnlineSavedGames" class="savedGames">
+
                     </div>
                 </div>
             </div>
         </div>
     </form>
+    <div id="redirectThingy"></div>
 %SetUrl%
-    <script>      
+    <script>
+        var url = "../Advanced-Tick-Tac-Toe/index.sh";
+    
+        const loadSavedGames = (type) => {
+            var name = document.getElementById("nameInput").value;
+            if (name == null || name == "") { return; }
+
+            document.getElementById(type).innerHTML = '<div class="loading .center">Loading</br><div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>';
+
+            var ajax = new XMLHttpRequest();
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById(type).innerHTML = ajax.responseText;
+                }
+            };
+            ajax.open("POST", url, true);
+            ajax.send(`SavedGames=${name}&Type=${type}`);
+        }
+
+        const startGame = (name, file) => {
+            var ajax = new XMLHttpRequest();
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("redirectThingy").innerHTML = ajax.responseText;
+                    document.forms["instasubmit"].submit();
+                }
+            };
+            ajax.open("POST", url, true);
+            ajax.send(`LoadLocalSavedGames=${name}&numberOfFiles=${file}`);
+        }
+
         const showSingleplayer = () => {
             document.getElementById('singleplayerThingy').className = 'singleplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';

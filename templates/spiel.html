@@ -3,54 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-%Title%
+    <title id="title"> </title>
 %Style%
 </head>
 <body>
     <div class="starfield center">
-%NameOponent%
+        <h1 id="NameRival"></h1>
     </div>
-    <div class="gamefield center">
-%GameField%
+    <a href="index.sh">Zurueck zum Hauptmenue</a>
+    <div id="gamefield" class="gamefield center">
     </div>
-%GameData%
     <script>
+        "%GameData%";
+        var saveData = {};
+        var url = "../Advanced-Tick-Tac-Toe/game.sh";
+
         const clickHandler = (bigField, smallField, id) => {
             var clickedField = document.getElementById(id);
 
+            if(saveData['Winner'] !== ""){
+                alert(`Spieler ${saveData["Winner"]} [${saveData["CurrentPlayer"]}] hat Gewonnen!`);
+                return;
+            }
+
             if(lastMove.length != 0){
-                if(clickedField.innerHTML != "" || (! isEqualsArray(bigField, lastMove))){
+                if(clickedField.innerHTML !== "" || (! isEqualsArray(bigField, lastMove))){
                     return;
                 }
+            }
+            
+            // schaut nach ob das große feld, in welchem gerade ein kleines feld angeklickt
+            // wurde bereits gewonnen wurde und blockiert dieses
+            if (saveData['GameField'][bigField[0]][bigField[1]][3]["Winner"] !== ""){ 
+                return;
+            }
+            
+            // Speichert den aktuellen zug in das saveData dictionary
+            saveData['GameField'][bigField[0]][bigField[1]][smallField[0]][smallField[1]] = currentPlayer;
+            clickedField.innerHTML = currentPlayer; // zeigt den aktuellen Spieler auf dem spielfeld an
+            currentPlayer = (currentPlayer == playerFigures[0]) ? playerFigures[1] : playerFigures[0];
+            saveData["CurrentPlayer"] = currentPlayer;
+            
+            // überprüft ob das große feld in welchem gerade gespielt wird gewonnen wurde
+            // falls ja wird dies in dem saveData dictionary
+            let result = checkThreeInARow(saveData['GameField'][bigField[0]][bigField[1]]);
+            if (result !== null){
+                alert("Local Winner: " + result);
+                saveData['GameField'][bigField[0]][bigField[1]][3]["Winner"] = result;
+                
+                // formatiert die gewonnenen großen felder so, dass sie mit der selben methode überprüfbar sind, wie die kleinen felder
+                // und checkt ob das gesammte spiel gewonnen ist
+                var grossesFeldInArrayForm = [];
+                for (let col = 0; col < 3; col++) {
+                    grossesFeldInArrayForm[col] = [];
+                    for (let row = 0; row < 3; row++) {
+                        grossesFeldInArrayForm[col][row] = saveData['GameField'][col][row][3]["Winner"];
+                    }
+                }
 
+                result = checkThreeInARow(grossesFeldInArrayForm);
+                if (result !== null){
+                    // falls das spiel gewonnen ist wird der gewinner ermittelt und anschließend als gewinner in SaveData eingetragen un persistiert
+                    indexOfPlayerFigur = saveData["PlayerFigurs"].indexOf(result);
+                    saveData["CurrentPlayer"] = result;
+                    saveData["Winner"] = saveData["Players"][indexOfPlayerFigur];
+                    saveData["LastMove"] = [];
+                    alert(`Spieler ${saveData["Winner"]} [${result}] hat Gewonnen!`);
+                }
             }
 
-            switch(gameType) {
-                case "Local":
-                    clickedField.innerHTML = currentPlayer;
-                    currentPlayer = (currentPlayer == playerFigures[0]) ? playerFigures[1] : playerFigures[0];
-                    break;
-                case "Bot":
-                    break;
-                case "Online":
-                    break;
+            // checkt ob das nächste feld bereits gewonnen wurde und setzt lastMove auf [],
+            // somit hast der spieler freie auswahl in welchem großen feld er spielen möchte
+            if (saveData['GameField'][smallField[0]][smallField[1]][3]["Winner"] !== ""){
+                saveData["LastMove"] = [];
+                if(lastMove.length != 0){
+                    document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;";
+                }
+                lastMove = saveData["LastMove"];
+                return;
             }
+
+            saveData["LastMove"] = smallField;
+            sendGameMove(bigField, smallField, id);
+            
+            if(lastMove.length != 0){
+                document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;";
+            }
+
+            lastMove = saveData["LastMove"];
 
             if(lastMove.length != 0){
-                document.getElementById(lastMove[0] + "|" + lastMove[1]).style = "background-color: none;"
+                document.getElementById(smallField[0] + "|" + smallField[1]).style = `background-color: ${spotLight};`;
             }
-            lastMove = smallField;
-            document.getElementById(smallField[0] + "|" + smallField[1]).style = "background-color: " + spotLight + ";"
-            // Send lastMove and playerchange to Server
-            
-            sendGameMove(bigField, smallField, id);
+        }
 
+        const setPageContent = () => {
+            if(lastMove.length != 0){
+                document.getElementById(lastMove[0] + "|" + lastMove[1]).style = `background-color: ${spotLight};`;
+            }
+
+            document.getElementById("title").innerText = `${gameType} Game ${players[0]} - ${players[1]}`;
+            document.getElementById("NameRival").innerText = `${players[0]} VS ${players[1]}`;
+        }
+
+        const GetGameDataAndRedrawGame = () => {
+            var ajax = new XMLHttpRequest();
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    saveData = JSON.parse(this.responseText);
+                    generateGameField();
+
+                    gameType = saveData["GameType"];
+                    players = saveData["Players"];
+                    lastMove = saveData["LastMove"];
+                    currentPlayer = saveData["CurrentPlayer"];
+                    playerFigures = saveData["PlayerFigurs"];
+                    spotLight = saveData["BackGroundSpotlightColor"];
+
+                    setPageContent();               
+                }
+            };
+            ajax.open("POST", url, true);
+            ajax.send(JSON.stringify({"Type": "GameData", "NameInput": NameInput, "numberOfFiles": numberOfFiles}));
+        }
+
+        const generateGameField = () => {
+            var idCounter = 0;
+            var GameContent = "";
+
+            GameContent += "<table class='game'>";
+            for (let i = 0; i < 3; i++) {
+                GameContent += "<tr>";
+                for (let ii = 0; ii < 3; ii++) {        
+                    GameContent += `<th><table id="${i}|${ii}" class="smallField">`;
+                    for (let iii = 0; iii < 3; iii++) {
+                        GameContent += "<tr>"
+                        for (let iiii = 0; iiii < 3; iiii++) {
+                            GameContent += `<th id="${idCounter}" onclick="clickHandler([${i},${ii}],[${iii},${iiii}],${idCounter})">${saveData['GameField'][i][ii][iii][iiii]}</th>`
+                            idCounter += 1;
+                        }
+                        GameContent += "</tr>"
+                    }
+                    GameContent += "</table></th>";
+                }
+                GameContent += "</tr>";
+            }
+            GameContent += "</table>";
+
+            document.getElementById("gamefield").innerHTML = GameContent;
         }
 
         const sendGameMove = (bigField, smallField, id) => {
             var ajax = new XMLHttpRequest();
-            const data = JSON.stringify({ "smallField": smallField, "bigField": bigField, "id": id, "numberOfFiles": numberOfFiles, "NameInput": NameInput, "currentPlayer": currentPlayer, "nextPlayer": (currentPlayer == playerFigures[0]) ? playerFigures[1] : playerFigures[0]});
-            ajax.open("POST", "../Advanced-Tick-Tac-Toe/game.sh", true);
+            const data = JSON.stringify({ "Type": "Save", "numberOfFiles": numberOfFiles, "NameInput": NameInput, "data": saveData});
+            ajax.open("POST", url, true);
             ajax.send(data);
         }
 
@@ -59,8 +165,38 @@
                 return false; 
             }
             let isSameAll = arrA.every((valueA, indexA) => valueA == arrB[indexA]);
+            
             return isSameAll;
         }
+
+        function checkThreeInARow(matrix) {
+            // Check rows
+            for (let row = 0; row < 3; row++) {
+                if (matrix[row][0] === matrix[row][1] && matrix[row][1] === matrix[row][2] && matrix[row][0] !== "") {
+                    return matrix[row][0];
+                }
+            }
+
+            // Check columns
+            for (let col = 0; col < 3; col++) {
+                if (matrix[0][col] === matrix[1][col] && matrix[1][col] === matrix[2][col] && matrix[0][col] !== "") {
+                    return matrix[0][col];
+                }
+            }
+
+            // Check diagonals
+            if (matrix[0][0] === matrix[1][1] && matrix[1][1] === matrix[2][2] && matrix[0][0] !== "") {
+                return matrix[0][0];
+            }
+            
+            if (matrix[0][2] === matrix[1][1] && matrix[1][1] === matrix[2][0] && matrix[0][2] !== "") {
+                return matrix[0][2];
+            }
+
+            return null; // No three in a row found
+        }
+
+        window.onload = GetGameDataAndRedrawGame;
     </script>
 </body>
 </html>

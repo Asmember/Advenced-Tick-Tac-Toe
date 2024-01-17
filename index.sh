@@ -21,41 +21,56 @@ echo -ne "Content-type: text/html; charset=utf-8\n\n"
 read querystring
 eval "${querystring//&/;}"
 
-if [[ -n "$NewLocalGame" ]]; then
+if [[ -n "$NewGame" ]]; then
+
+    if [[ "$NewGame" == "Local" ]]; then
+        folder="games"
+    elif [[ "$NewGame" == "Online" ]]; then
+        folder="online"
+    else
+        exit
+    fi
 
     # erstellt einen eintrag in die Error Log Datei wenn der Name Leer ist
     if [[ ! -n $nameInput ]]; then
-        createErrorLogEntry "No Name Input"
+        echo "No Name Input"
+        exit
     fi
     
     # erstellt einen eintrag in die Error Log Datei wenn der Name nicht Ascii Zeichen beinhaltet
     if [[ "$nameInput" =~ [^a-zA-Z0-9]$ ]]; then
-        createErrorLogEntry "Name may not contain non ASCII characters"
+        echo "Name may not contain non ASCII characters"
+        exit
     fi
 
     # prüft ob der User bereits spiele Gespielt hat und erstellt ein neues verzeichnis falls nicht
-    if [ ! -d "$saveDatadir/$nameInput/games" ]; then
+    if [ ! -d "$saveDatadir/$nameInput/$folder" ]; then
         if [ ! -d "$saveDatadir/$nameInput" ]; then
             mkdir -p "$saveDatadir/$nameInput";
         fi
 
         # erstellt den Games ordner 
-        mkdir "$saveDatadir/$nameInput/games";
+        mkdir "$saveDatadir/$nameInput/$folder";
     fi
 
     # zählt die anzahl an bereits existierenden spielständen
-    numberOfFiles=`ls "$saveDatadir/$nameInput/games" -1q | wc -l`
+    numberOfFiles=`ls "$saveDatadir/$nameInput/$folder" -1q | wc -l`
     
     # pfaad zur speicherdatei
-    saveFile="$saveDatadir/$nameInput/games/$numberOfFiles.json"
+    saveFile="$saveDatadir/$nameInput/$folder/$numberOfFiles.json"
 
     # Copys the Default Save Game to the current Game
     cp "$saveDatadir/defaultsaveData.json" "$saveFile"
 
     # Einstellungen Bearbeiten, die spezifisch für das Lokale spiel benötigt werden
-    echo `jq ".GameType |= \"Local\"" "$saveFile"` > "$saveFile"
+    echo `jq ".GameType |= \"$NewGame\"" "$saveFile"` > "$saveFile"
     echo `jq ".Players[0] |= \"$nameInput\"" "$saveFile"` > "$saveFile"
-    echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
+
+    if [[ "$NewGame" == "Local" ]]; then
+        echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
+    elif [[ "$NewGame" == "Online" ]]; then
+        folder="online"
+    fi
 
     # Erstellt eine Form, welche direkt abgeschickt wird
     # leitet an das Game script weiter
@@ -69,6 +84,99 @@ if [[ -n "$NewLocalGame" ]]; then
         document.forms["instasubmit"].submit()
     </script>
 EOF
+
+elif [[ -n "$NewOnlineGame" ]]; then
+
+# erstellt einen eintrag in die Error Log Datei wenn der Name Leer ist
+    if [[ ! -n $nameInput ]]; then
+        echo "No Name Input"
+        exit
+    fi
+    
+    # erstellt einen eintrag in die Error Log Datei wenn der Name nicht Ascii Zeichen beinhaltet
+    if [[ "$nameInput" =~ [^a-zA-Z0-9]$ ]]; then
+        echo "Name may not contain non ASCII characters"
+        exit
+    fi
+
+    # prüft ob der User bereits spiele Gespielt hat und erstellt ein neues verzeichnis falls nicht
+    if [ ! -d "$saveDatadir/$nameInput/online" ]; then
+        if [ ! -d "$saveDatadir/$nameInput" ]; then
+            mkdir -p "$saveDatadir/$nameInput";
+        fi
+
+        # erstellt den Games ordner 
+        mkdir "$saveDatadir/$nameInput/online";
+    fi
+
+    # zählt die anzahl an bereits existierenden spielständen
+    numberOfFiles=`ls "$saveDatadir/$nameInput/games" -1q | wc -l`
+    
+    # pfaad zur speicherdatei
+    saveFile="$saveDatadir/$nameInput/online/$numberOfFiles.json"
+
+    # Copys the Default Save Game to the current Game
+    cp "$saveDatadir/defaultsaveData.json" "$saveFile"
+
+    # Einstellungen Bearbeiten, die spezifisch für das Lokale spiel benötigt werden
+    echo `jq ".GameType |= \"Online\"" "$saveFile"` > "$saveFile"
+    echo `jq ".Players[0] |= \"$nameInput\"" "$saveFile"` > "$saveFile"
+
+    # Erstellt eine Form, welche direkt abgeschickt wird
+    # leitet an das Game script weiter
+    # überträgt wichtige informationen and das game script
+    cat << EOF
+    <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
+        <input type="hidden" name="NameInput" value="$nameInput">
+        <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
+    </form>
+    <script>
+        document.forms["instasubmit"].submit()
+    </script>
+EOF
+
+# Läd das asugewählte spiel und leitet direkt weiter
+elif [[ -n "$LoadLocalSavedGames" ]]; then
+    cat << EOF
+    <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
+        <input type="hidden" name="NameInput" value="$LoadLocalSavedGames">
+        <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
+    </form>
+EOF
+
+elif [[ -n "$SavedGames" ]]; then
+
+    if [[ "$Type" == "LocalSavedGames" ]]; then
+        type="games"
+        emptyText="Keine Spiele unter diesem Namen gespeichert, erstelle ein Neues um zu Spielen"
+    elif [[ "$Type" == "OnlineSavedGames" ]]; then
+        type="online"
+        emptyText="Keine Spiele unter diesem Namen gespeichert, erstelle ein Neues oder Trete einem anderen Online Spiel bei um zu Spielen"
+    else
+        exit
+    fi
+
+    SavedGamesDir="$saveDatadir/$SavedGames/$type"
+
+    if [[ -d "$saveDatadir/$SavedGames" ]] &&  [[ -d "$SavedGamesDir" ]] && [[ `ls "$SavedGamesDir" -1q | wc -l` != 0 ]]; then
+        for SavedGame in `ls "$SavedGamesDir"`; do
+            playername1=`jq -r ".Players[0]" "$SavedGamesDir/$SavedGame"`
+            playername2=`jq -r ".Players[1]" "$SavedGamesDir/$SavedGame"`
+            Winner=`jq -r ".Winner" "$SavedGamesDir/$SavedGame"`
+
+            SavedGameNumberOnly=`tr -d '.json' <<< "$SavedGame"`
+
+            echo "<div onclick=\"startGame('$SavedGames', $SavedGameNumberOnly)\">"
+            echo "$playername1 VS $playername2"
+            if [[ $Winner != "" ]]; then
+                echo "- Gewonnen: $Winner"
+            fi
+            echo "</div>"
+        done
+    else
+        echo "$emptyText"
+    fi
+
 else
     # Liest das HTML Template und füllt die platzhalter mit inhalt
     while IFS= read -r line
@@ -96,13 +204,3 @@ else
         fi
     done < "$indexHTMLTemplate"
 fi
-
-# function die den angegebenen error in den Errorlog schreibt
-createErrorLogEntry(){
-    # Makes sure the function is used correctly
-    if [[ ! -n "$1" ]]; then
-        return
-    fi
-
-    echo "$(date): $1" >> "$errorLog"
-}
