@@ -69,7 +69,7 @@ if [[ -n "$NewGame" ]]; then
     if [[ "$NewGame" == "Local" ]]; then
         echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
     elif [[ "$NewGame" == "Online" ]]; then
-        folder="online"
+        echo ""
     fi
 
     # Erstellt eine Form, welche direkt abgeschickt wird

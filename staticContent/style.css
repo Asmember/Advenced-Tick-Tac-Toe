@@ -47,6 +47,7 @@ body {
     margin: 10px;
 }
 
+/* überhaupt nicht von https://loading.io/css/ gestohlen :3*/
 .lds-spinner {
     color: official;
     display: inline-block;
@@ -141,3 +142,5 @@ body {
     opacity: 0;
 }
 }
+
+/* hier hört der diebstahl auf*/
