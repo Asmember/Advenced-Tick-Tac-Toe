@@ -32,7 +32,6 @@
                         <button onclick="loadSavedGames('LocalSavedGames')" type="button" class="center" name="LoadLocalGame">Let's Go!</button>
                     </div>
                     <div id="LocalSavedGames" class="savedGames">
-                        
                     </div>
                 </div>
         
@@ -53,9 +52,14 @@
                         <button type="button" onclick="loadSavedGames('OnlineSavedGames')" name="LoadOnlineGame">Let's Go!</button>
                     </div>
                     <div id="OnlineSavedGames" class="savedGames">
-
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="Leaderboard">
+            <h3>Leaderboard</h3>
+            <div id="LeaderboardUser" class="LeaderboardUser">
+                <div class="loading .center">Loading Leaderboard</br><div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
             </div>
         </div>
     </form>
@@ -92,6 +96,41 @@
             ajax.send(`LoadSavedGames=${name}&numberOfFiles=${file}&GameType=${GameType}`);
         }
 
+        // sortiert die Spieler nach der Anzahl der Gewonnenen Online Spiele und gibt die ersten 5 im leaderboard aus
+        const loadLeaderboard = () => {
+            var ajax = new XMLHttpRequest();
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    if(ajax.responseText =! " ") {
+                        const keyValuePairs = ajax.responseText.split('\n').map(pair => pair.split(':'));
+                        const allPlayerWins = Object.fromEntries(keyValuePairs);
+    
+                        var items = Object.keys(allPlayerWins).map(function(key) {
+                            return [key, allPlayerWins[key]];
+                        });
+    
+                        items.sort(function(first, second) {
+                            return second[1] - first[1];
+                        });
+    
+                        var Leaderboard=""
+                        items.slice(0, 5).forEach((item) => {
+                            if(item[0] !== ""){
+                                Leaderboard += `<div><div style="display: inline-block;">${item[0]}:</div> <div  style="display: inline-block;">${item[1]}</div></div>`;
+                            }
+                        });
+                    }else{
+                        Leaderboard="Sei der erste auf dem Leaderboard und Spiele Ein Multiplayer Spiel!"
+                    }
+
+                    document.getElementById("LeaderboardUser").innerHTML = Leaderboard;
+                }
+            };
+            ajax.open("POST", url, true);
+            ajax.send("LoadLeaderBoard=1");
+        }
+
         const showSingleplayer = () => {
             document.getElementById('singleplayerThingy').className = 'singleplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';
@@ -110,6 +149,8 @@
             document.getElementById('SinglePlayerButton').className = '';
             document.getElementById('MultiPlayerButton').className = '';
         }
+
+        window.onload=loadLeaderboard;
     </script>
 </body>
 </html>

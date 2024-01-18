@@ -173,9 +173,11 @@ elif [[ -n "$SavedGames" ]]; then
     if [[ "$Type" == "LocalSavedGames" ]]; then
         type="games"
         emptyText="Keine Spiele unter diesem Namen gespeichert, erstelle ein Neues um zu Spielen"
+
     elif [[ "$Type" == "OnlineSavedGames" ]]; then
         type="online"
         emptyText="Keine Spiele unter diesem Namen gespeichert, erstelle ein Neues oder Trete einem anderen Online Spiel bei um zu Spielen"
+    
     else
         exit
     fi
@@ -203,6 +205,24 @@ elif [[ -n "$SavedGames" ]]; then
     else
         echo "$emptyText"
     fi
+
+# lädt alle Spieler und die anzahl der gewonenen online Spiele die die Jeweilige Person hat
+elif [[ -n "$LoadLeaderBoard" ]]; then
+
+    for Player in `ls -d $saveDatadir/*/ | sed "s#^$saveDatadir/##" | cut -f1 -d'/'`; do
+        playerSaveData="$saveDatadir/$Player/online"
+        amountOfWins=0
+
+        if [[ -d $playerSaveData ]]; then
+            for Game in `ls $playerSaveData `; do
+                if [[ `jq -r ".Winner" "$playerSaveData/$Game"` == $Player ]]; then
+                    let "amountOfWins += 1"
+                fi
+            done
+        fi
+
+        echo "$Player:$amountOfWins"
+    done
 
 else
     # Liest das HTML Template und füllt die platzhalter mit inhalt
