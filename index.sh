@@ -74,7 +74,15 @@ if [[ -n "$NewGame" ]]; then
         echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
 
     elif [[ "$NewGame" == "Online" ]]; then
-        code=`tr -dc A-Z </dev/urandom | head -c 8` # Generiert den invite Code
+
+        # Generiert den invite Code
+        array=()
+        for i in {A..Z}; do
+            array[$RANDOM]=$i
+        done
+
+        code=${array[@]::8}
+        code=${code// /}
 
         echo `jq ".OnlineCode |= \"$code\"" "$saveFile"` > "$saveFile" # Speichert den invite Code im game save File des erstellers
 
