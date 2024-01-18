@@ -5,7 +5,8 @@
         "",
         ""
     ],
-    "PlayerFigurs":["X", "O"],
+    "OnlineCode": "",
+    "PlayerFigurs": ["X", "O"],
     "CurrentPlayer": "X",
     "BackGroundSpotlightColor": "#409987",
     "LastMove": [],

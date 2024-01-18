@@ -80,7 +80,7 @@
             ajax.send(`SavedGames=${name}&Type=${type}`);
         }
 
-        const startGame = (name, file) => {
+        const startGame = (name, file, GameType) => {
             var ajax = new XMLHttpRequest();
             ajax.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -89,7 +89,7 @@
                 }
             };
             ajax.open("POST", url, true);
-            ajax.send(`LoadLocalSavedGames=${name}&numberOfFiles=${file}`);
+            ajax.send(`LoadSavedGames=${name}&numberOfFiles=${file}&GameType=${GameType}`);
         }
 
         const showSingleplayer = () => {

@@ -23,6 +23,8 @@ eval "${querystring//&/;}"
 
 if [[ -n "$NewGame" ]]; then
 
+    # wählt den speicherort aus, in welchem der Spielstand gespeichert wird
+    # beendet das script falls eine falsche eingabe passiert ist
     if [[ "$NewGame" == "Local" ]]; then
         folder="games"
     elif [[ "$NewGame" == "Online" ]]; then
@@ -62,17 +64,22 @@ if [[ -n "$NewGame" ]]; then
     # Copys the Default Save Game to the current Game
     cp "$saveDatadir/defaultsaveData.json" "$saveFile"
 
-    # Einstellungen Bearbeiten, die spezifisch für das Lokale spiel benötigt werden
+    # Allgemeine Einstellungen in die game save File schreiben
     echo `jq ".GameType |= \"$NewGame\"" "$saveFile"` > "$saveFile"
     echo `jq ".Players[0] |= \"$nameInput\"" "$saveFile"` > "$saveFile"
 
     if [[ "$NewGame" == "Local" ]]; then
+        # Einstellungen Bearbeiten, die spezifisch für das Lokale spiel benötigt werden
         echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
+
     elif [[ "$NewGame" == "Online" ]]; then
         onlineGamesFile="$saveDatadir/onlineGames.json"
-        code=`tr -dc A-Z </dev/urandom | head -c 8`
 
-        echo `cat "$onlineGamesFile" | jq ". += { $code: { \"voll\": false, $nameInput : $numberOfFiles}}"` > $onlineGamesFile
+        code=`tr -dc A-Z </dev/urandom | head -c 8` # Generiert den invite Code
+
+        echo `jq ".OnlineCode |= \"$code\"" "$saveFile"` > "$saveFile" # Speichert den invite Code im game save File des erstellers
+
+        echo `cat "$onlineGamesFile" | jq ". += { $code: { \"voll\": false, $nameInput : $numberOfFiles}}"` > $onlineGamesFile # fügt den gamecode und die zu Kopierende Datei in den Online Game Speicher an
     fi
 
     # Erstellt eine Form, welche direkt abgeschickt wird
@@ -82,23 +89,30 @@ if [[ -n "$NewGame" ]]; then
     <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
         <input type="hidden" name="NameInput" value="$nameInput">
         <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
+        <input type="hidden" name="GameType" value="$folder">
     </form>
     <script>
         document.forms["instasubmit"].submit()
     </script>
 EOF
 
-# Läd das asugewählte spiel und leitet direkt weiter
-elif [[ -n "$LoadLocalSavedGames" ]]; then
+# Läd das asugewählte spiel und leitet direkt zum Spiel weiter
+elif [[ -n "$LoadSavedGames" ]]; then
     cat << EOF
     <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
-        <input type="hidden" name="NameInput" value="$LoadLocalSavedGames">
+        <input type="hidden" name="NameInput" value="$LoadSavedGames">
         <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
+        <input type="hidden" name="GameType" value="$GameType">
     </form>
 EOF
 
+# Liefert alle gespeicherten Spiele eines Bestimmten Users zurück
+# dabei wird unterschieden ob es ein Online oder Local Game ist
 elif [[ -n "$SavedGames" ]]; then
 
+    # wählt den speicherort aus, in welchem der Spielstand gespeichert wird
+    # ebenso wird der Text für einene Leeren Games Ordner definiert
+    # beendet das script falls eine falsche eingabe passiert ist
     if [[ "$Type" == "LocalSavedGames" ]]; then
         type="games"
         emptyText="Keine Spiele unter diesem Namen gespeichert, erstelle ein Neues um zu Spielen"
@@ -109,6 +123,7 @@ elif [[ -n "$SavedGames" ]]; then
         exit
     fi
 
+    # allgemeine Speicher Location
     SavedGamesDir="$saveDatadir/$SavedGames/$type"
 
     if [[ -d "$saveDatadir/$SavedGames" ]] &&  [[ -d "$SavedGamesDir" ]] && [[ `ls "$SavedGamesDir" -1q | wc -l` != 0 ]]; then
@@ -117,9 +132,11 @@ elif [[ -n "$SavedGames" ]]; then
             playername2=`jq -r ".Players[1]" "$SavedGamesDir/$SavedGame"`
             Winner=`jq -r ".Winner" "$SavedGamesDir/$SavedGame"`
 
+            # läd alle Dateien aus dem verzeichnis und entfernt die Dateiendung
             SavedGameNumberOnly=`tr -d '.json' <<< "$SavedGame"`
 
-            echo "<div onclick=\"startGame('$SavedGames', $SavedGameNumberOnly)\">"
+            # generiert den HTML Code für die ausgabe auf der Website, 
+            echo "<div onclick=\"startGame('$SavedGames', $SavedGameNumberOnly, '$type')\">"
             echo "$playername1 VS $playername2"
             if [[ $Winner != "" ]]; then
                 echo "- Gewonnen: $Winner"

@@ -21,30 +21,31 @@ echo -ne "Content-type: text/html; charset=utf-8\n\n"
 read querystring
 
 if [[ "$querystring" != *"="* ]]; then
+    # Bash kann nicht gescheid mit json umgehen, deshalb muss ich manuell die variablen aus json herauspopeln
+    # dazu verwende ich eines der am wenigst performanten packages auf diesem planeten, jq, ich liebe es
+    NameInput=`echo "$querystring" | jq -r ".NameInput"`
+    numberOfFiles=`echo "$querystring" | jq -r ".numberOfFiles"`
+    GameType=`echo "$querystring" | jq -r ".GameType"`
+
+    gameSaveFile="$saveDatadir/$NameInput/$GameType/$numberOfFiles.json"
+
+    # liest den Spielstand
     if [[ `echo "$querystring" | jq -r ".Type"` == "GameData" ]]; then
-        NameInput=`echo "$querystring" | jq -r ".NameInput"`
-        numberOfFiles=`echo "$querystring" | jq -r ".numberOfFiles"`
-
-        gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
-
         cat "$gameSaveFile"
 
+    # Persistiert den Spielstand
     elif [[ `echo "$querystring" | jq -r ".Type"` == "Save" ]]; then
-        
-        echo "$querystring"
-        # Bash kann nicht gescheid mit json umgehen, deshalb muss ich manuell die variablen aus json herauspopeln
-        # dazu verwende ich eines der am wenigst performanten packages auf diesem planeten, jq, ich liebe es
-        NameInput=`echo "$querystring" | jq -r ".NameInput"`
-        numberOfFiles=`echo "$querystring" | jq -r ".numberOfFiles"`
-
-        gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
-
         echo `echo "$querystring" | jq -r ".data"` > "$gameSaveFile"
+
+    # wartet bis ein weiterer Spieler dem Spiel Beitritt
+    elif [[ `echo "$querystring" | jq -r ".Type"` == "WaitForJoin" ]]; then
+        inotifywait -e modify $gameSaveFile > /dev/null 2>&1 # wartet bis sich die Datei verändert hat, schmeißt den output weg (gibt nichts aus)
+        if [[ `echo "$querystring" | jq -r ".Players[1]"` == "" ]] && echo "retry"
+    # ADD STUFF HERE
+        
     fi
 else
     eval "${querystring//&/;}"
-
-    gameSaveFile="$saveDatadir/$NameInput/games/$numberOfFiles.json"
 
     # Liest das HTML Template und füllt die platzhalter mit inhalt
     while IFS= read -r line
@@ -61,8 +62,9 @@ else
         # Geplant ist dies durch eine Ajax Anfrage zu ersetzen
         elif [[ "$line" == *"%GameData%"* ]]; then
             cat << EOF
-            var NameInput ="$NameInput";
-            var numberOfFiles ="$numberOfFiles";
+            var NameInput = "$NameInput";
+            var numberOfFiles = "$numberOfFiles";
+            var GameType = "$GameType";
 EOF
 
         # Gibt alles was nicht platzhalter sind aus
