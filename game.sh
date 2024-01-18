@@ -13,6 +13,7 @@ saveDatadir=saveData
 cssFile="staticContent/style.css"
 gameHtmlTemplate="templates/spiel.html"
 ErrorHTMLTemplate="templates/error.html"
+onlineGamesFile="$saveDatadir/onlineGames.json"
 
 # Content Type Setzen
 echo -ne "Content-type: text/html; charset=utf-8\n\n"
@@ -39,9 +40,27 @@ if [[ "$querystring" != *"="* ]]; then
 
     # wartet bis ein weiterer Spieler dem Spiel Beitritt
     elif [[ `echo "$querystring" | jq -r ".Type"` == "WaitForJoin" ]]; then
-        inotifywait -e modify $gameSaveFile > /dev/null 2>&1 # wartet bis sich die Datei verändert hat, schmeißt den output weg (gibt nichts aus)
-        if [[ `echo "$querystring" | jq -r ".Players[1]"` == "" ]] && echo "retry"
-    # ADD STUFF HERE
+        [[ `inotifywait -t 700 -q -e modify $gameSaveFile` != *"MODIFY"* ]] && exit # wartet bis sich die Datei verändert hat, falls ein timeout passiert wird das script beendet
+        [[ `echo "$querystring" | jq -r ".Players[1]"` == "" ]] && echo "retry"
+
+        cat "$gameSaveFile"
+    
+    # wartet bis sich die Datei Updated sodass das Spiel diese laden kann
+    elif [[ `echo "$querystring" | jq -r ".Type"` == "WaitForOtherPlayersTurn" ]]; then
+        [[ `inotifywait -t 700 -q -e modify $gameSaveFile` != *"MODIFY"* ]] && exit # wartet bis sich die Datei verändert hat, falls ein timeout passiert wird das script beendet
+
+        cat "$gameSaveFile"
+
+    # Kopiert den Aktuellen Zug des einen Spielers zum anderen Spieler    
+    elif [[ `echo "$querystring" | jq -r ".Type"` == "CopyPlayersTurn" ]]; then
+        onlineCode=`jq -r ".OnlineCode" $gameSaveFile`
+
+        # name und file des anderen Spielers holen
+        otherPlayerName=`jq -r "del(.$onlineCode | .voll, .$NameInput) | .$onlineCode | keys[]" $onlineGamesFile`
+        otherPlayerSaveFileNumber=`jq -r ".$onlineCode | .$otherPlayerName" $onlineGamesFile`
+        otherPlayerSaveFile="$saveDatadir/$otherPlayerName/online/$otherPlayerSaveFileNumber.json"
+        
+        cp $gameSaveFile $otherPlayerSaveFile
         
     fi
 else

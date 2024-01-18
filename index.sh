@@ -13,6 +13,7 @@ saveDatadir=saveData
 errorLog=error.log
 cssFile="staticContent/style.css"
 indexHTMLTemplate="templates/index.html"
+onlineGamesFile="$saveDatadir/onlineGames.json"
 
 # Content Type Setzen
 echo -ne "Content-type: text/html; charset=utf-8\n\n"
@@ -73,8 +74,6 @@ if [[ -n "$NewGame" ]]; then
         echo `jq ".Players[1] |= \"Local\"" "$saveFile"` > "$saveFile"
 
     elif [[ "$NewGame" == "Online" ]]; then
-        onlineGamesFile="$saveDatadir/onlineGames.json"
-
         code=`tr -dc A-Z </dev/urandom | head -c 8` # Generiert den invite Code
 
         echo `jq ".OnlineCode |= \"$code\"" "$saveFile"` > "$saveFile" # Speichert den invite Code im game save File des erstellers
@@ -92,7 +91,7 @@ if [[ -n "$NewGame" ]]; then
         <input type="hidden" name="GameType" value="$folder">
     </form>
     <script>
-        document.forms["instasubmit"].submit()
+        document.forms["instasubmit"].submit();
     </script>
 EOF
 
@@ -104,6 +103,56 @@ elif [[ -n "$LoadSavedGames" ]]; then
         <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
         <input type="hidden" name="GameType" value="$GameType">
     </form>
+EOF
+
+# Lässt spieler online Games Beitreten
+elif [[ -n "$JoinOnlineGame" ]]; then
+    [[ -n `jq ". | select(.$JoinCode == null)" "$onlineGamesFile"` ]] && echo "invalid Join Code" && exit # prüft ob sich der code in der Datei befindet
+    [[ `jq ".$JoinCode | .voll" $onlineGamesFile` == "true" ]] && echo "Raum ist bereits voll" && exit # prüft ob bereits eine Person dem Spiel Beigetreten ist
+
+    # prüft ob der User bereits spiele Gespielt hat und erstellt ein neues verzeichnis falls nicht
+    if [ ! -d "$saveDatadir/$nameInput/online" ]; then
+        if [ ! -d "$saveDatadir/$nameInput" ]; then
+            mkdir -p "$saveDatadir/$nameInput";
+        fi
+
+        # erstellt den Games ordner 
+        mkdir "$saveDatadir/$nameInput/online";
+    fi
+
+    joineeOnlineSaveLocation="$saveDatadir/$nameInput/online"
+
+    # zählt die anzahl an bereits existierenden spielständen
+    numberOfFiles=`ls "$joineeOnlineSaveLocation" -1q | wc -l`
+
+    # name und file des anderen Spielers holen
+    otherPlayerName=`jq -r ".$JoinCode | keys[0]" $onlineGamesFile`
+    otherPlayerSaveFileNumber=`jq -r ".$JoinCode | .$otherPlayerName" $onlineGamesFile`
+    otherPlayerSaveFile="$saveDatadir/$otherPlayerName/online/$otherPlayerSaveFileNumber.json"
+    
+    # online Game File Bearbeiten
+    echo `jq ".$JoinCode += {\"$nameInput\": $numberOfFiles}" "$onlineGamesFile"` > "$onlineGamesFile"
+    echo `jq ".$JoinCode.voll |= true" "$onlineGamesFile"` > "$onlineGamesFile"
+
+    # fügt den beigetretenen spieler als mitspieler hinzu
+    echo `jq ".Players[1] |= \"$nameInput\"" "$otherPlayerSaveFile"` > "$otherPlayerSaveFile"
+
+    # Kopiert das Game File des Gegners in eigenen Online Save
+    cp $otherPlayerSaveFile "$joineeOnlineSaveLocation/$numberOfFiles.json"
+
+
+    # Erstellt eine Form, welche direkt abgeschickt wird
+    # leitet an das Game script weiter
+    # überträgt wichtige informationen and das game script
+    cat << EOF
+    <form name="instasubmit" action="/cgi-bin/Advanced-Tick-Tac-Toe/game.sh" method="post">
+        <input type="hidden" name="NameInput" value="$nameInput">
+        <input type="hidden" name="numberOfFiles" value="$numberOfFiles">
+        <input type="hidden" name="GameType" value="online">
+    </form>
+    <script>
+        document.forms["instasubmit"].submit();
+    </script>
 EOF
 
 # Liefert alle gespeicherten Spiele eines Bestimmten Users zurück

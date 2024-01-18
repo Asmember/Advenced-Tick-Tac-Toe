@@ -23,12 +23,22 @@
         // Schaut nach ob ein gültiger spielzug getätigt wurde
         const clickHandler = (bigField, smallField, id) => {
             var clickedField = document.getElementById(id);
-
+            
             // überprüft ob das Spiel bereits gewonnen wurde, falls ja wird eine Meldung ausgegeben
             if(saveData['Winner'] !== ""){
                 alert(`Spieler ${saveData["Winner"]} [${saveData["CurrentPlayer"]}] hat Gewonnen!`);
                 return;
             }
+
+            // Falls das Spiel gerade ein Online Spiel ist und der Gegner am zug ist, wid jegliche aktion ignoriert
+            if (saveData["GameType"] === "Online") {
+                var currentPlayersFigure = saveData["PlayerFigurs"][saveData["Players"].indexOf(NameInput)]; // holt die Spielfigur, welche zum aktuellen Spieler gehört
+
+                if (saveData["CurrentPlayer"] !== currentPlayersFigure) {
+                    return;
+                }
+            }
+
             
             // falls der letzte zug nicht gesetzt ist kann ein beliebiger zug gemacht werden
             if(lastMove.length != 0){
@@ -88,6 +98,7 @@
                 }
 
                 lastMove = saveData["LastMove"];
+                sendGameMove(bigField, smallField, id);
                 return;
             }
 
@@ -123,18 +134,58 @@
             document.getElementById("nowPlaying").innerText = `Gerade ist "${currentPlayer}" am zug`;
         }
 
-        // Kümmert sich um den online Code
-        const startOnlineCode = () => {
+        const drawPage = () => {
+            generateGameField();
+
+            // Läd die saveDaten in lokale varriablen
+            gameType = saveData["GameType"];
+            players = saveData["Players"];
+            lastMove = saveData["LastMove"];
+            currentPlayer = saveData["CurrentPlayer"];
+            playerFigures = saveData["PlayerFigurs"];
+            spotLight = saveData["BackGroundSpotlightColor"];
+
+            setPageContent();
+        }
+
+        // Kümmert sich um das refreshen des save Games
+        const WaitForOtherPlayersTurn = () => {
             var ajax = new XMLHttpRequest();
             ajax.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
+                    saveData = JSON.parse(this.responseText);
+
+                    drawPage()
+                }
+            };
+
+            // falls ein timeout passiert wird eine neue request gesendet
+            //ajax.ontimeout = WaitForOtherPlayersTurn();
+
+            ajax.open("POST", url, true);
+            ajax.send(JSON.stringify({"Type": "WaitForOtherPlayersTurn", "NameInput": NameInput, "GameType": GameType, "numberOfFiles": numberOfFiles}));
+        }
+
+        // wartet bis ein weiterer Spieler dem Spiel Beitritt
+        const waitForJoin = () => {
+            var ajax = new XMLHttpRequest();
+            
+            // falls ein timeout passiert wird eine neue request gesendet
+            //ajax.ontimeout = waitForJoin;
+            
+            ajax.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
                     if (this.responseText === "retry") {
-                        startOnlineCode();
+                        waitForJoin();
+                        return;
                     }
                     
                     saveData = JSON.parse(this.responseText);
+
+                    drawPage();
                 }
             };
+
             ajax.open("POST", url, true);
             ajax.send(JSON.stringify({"Type": "WaitForJoin", "NameInput": NameInput, "GameType": GameType, "numberOfFiles": numberOfFiles}));
         }
@@ -146,40 +197,37 @@
             ajax.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     saveData = JSON.parse(this.responseText);
-
-                    if (GameType === "online"){
-
+                    
+                    // überprüft ob es sich um ein Online Game handelt und ob bereits ein zweiter spieler beigetreten ist
+                    // falls nicht wird ein Ladebildschirm und der beitrittscode angezeigt
+                    if(GameType === "online") {
                         if (saveData["Players"][1] === "") {
                             document.getElementById("title").innerText = "Warte Auf weiteren Spieler";
                             document.getElementById("NameRival").innerText = `Ware Auf weiteren Spieler, GameCode: ${saveData["OnlineCode"]}`;
+
+                            waitForJoin();
+                            return;
                         }
 
-                        startOnlineCode();
-                        return;
+                        var currentPlayersFigure = saveData["PlayerFigurs"][saveData["Players"].indexOf(NameInput)]; // holt die Spielfigur, welche zum aktuellen Spieler gehört
+
+                        if (saveData["CurrentPlayer"] !== currentPlayersFigure) {
+                            WaitForOtherPlayersTurn();
+                        }
                     }
                     
-                    generateGameField();
-
-                    // Läd die saveDaten in lokale varriablen
-                    gameType = saveData["GameType"];
-                    players = saveData["Players"];
-                    lastMove = saveData["LastMove"];
-                    currentPlayer = saveData["CurrentPlayer"];
-                    playerFigures = saveData["PlayerFigurs"];
-                    spotLight = saveData["BackGroundSpotlightColor"];
-
-                    setPageContent();
+                    drawPage();
                 }
             };
             ajax.open("POST", url, true);
             ajax.send(JSON.stringify({"Type": "GameData", "NameInput": NameInput, "GameType": GameType, "numberOfFiles": numberOfFiles}));
         }
-
+        
+        // Generiert das Spielfeld anhand der empfangenen save File
         const generateGameField = () => {
             var idCounter = 0;
             var GameContent = "";
 
-            // Generiert das Spielfeld
             GameContent += "<table class='game'>";
             for (let i = 0; i < 3; i++) {
                 GameContent += "<tr>";
@@ -208,6 +256,16 @@
             const data = JSON.stringify({ "Type": "Save", "numberOfFiles": numberOfFiles, "GameType": GameType, "NameInput": NameInput, "data": saveData});
             ajax.open("POST", url, true);
             ajax.send(data);
+
+            // stellt sicher das der aktuelle zug zu dem anderen Spieler Kopiert wird und wartet auf den Zug des anderen Spielers
+            if (saveData["GameType"] === "Online") {
+                var ajax = new XMLHttpRequest();
+
+                ajax.open("POST", url, true);
+                ajax.send(JSON.stringify({"Type": "CopyPlayersTurn", "NameInput": NameInput, "GameType": GameType, "numberOfFiles": numberOfFiles}));
+
+                WaitForOtherPlayersTurn();
+            }
         }
 
         // schaut ob zwei arrays gleich sind
