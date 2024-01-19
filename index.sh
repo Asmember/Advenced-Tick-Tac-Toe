@@ -185,6 +185,8 @@ elif [[ -n "$SavedGames" ]]; then
     # allgemeine Speicher Location
     SavedGamesDir="$saveDatadir/$SavedGames/$type"
 
+    # Prüft ob die Person bereits einen Ordner erstellt wurde und ob es bereits einen Game Speicher Ordner gibt (online oder games)
+    # und schaut ob der Game Speicher nicht leer ist
     if [[ -d "$saveDatadir/$SavedGames" ]] &&  [[ -d "$SavedGamesDir" ]] && [[ `ls "$SavedGamesDir" -1q | wc -l` != 0 ]]; then
         for SavedGame in `ls "$SavedGamesDir"`; do
             playername1=`jq -r ".Players[0]" "$SavedGamesDir/$SavedGame"`
@@ -227,16 +229,10 @@ elif [[ -n "$LoadLeaderBoard" ]]; then
 else
     # Liest das HTML Template und füllt die platzhalter mit inhalt
     while IFS= read -r line
-    do
-        # übergibt den Skript namen an Javascript
-        if [[ "$line" == *"%SetUrl%"* ]]; then
-            echo "<script>"
-            echo "  var url = \"$SCRIPT_NAME\"";
-            echo "</script>"
-			
+    do			
         # importiert die css datei in die Website, weil ich das installieren so einfach wie möglich gestalten möchte 
         # und usern nicht zutraue das sie es hinbekommen css dateien in /var/www/html abzulegen
-		elif [[ "$line" == *"%Style%"* ]]; then
+		if [[ "$line" == *"%Style%"* ]]; then
 			echo "<style>"
 			cat "$cssFile"
 			echo "</style>"

@@ -64,14 +64,15 @@
         </div>
     </form>
     <div id="redirectThingy"></div>
-%SetUrl%
     <script>
         var url = "../Advanced-Tick-Tac-Toe/index.sh";
     
+        // Läd den Spielstand des Aktuellen Spieles
         const loadSavedGames = (type) => {
             var name = document.getElementById("nameInput").value;
             if (name == null || name == "") { return; }
 
+            // solange noch keine Daten verfügbar sind wird ein Ladebalken angezeigt
             document.getElementById(type).innerHTML = '<div class="loading .center">Loading</br><div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>';
 
             var ajax = new XMLHttpRequest();
@@ -84,6 +85,7 @@
             ajax.send(`SavedGames=${name}&Type=${type}`);
         }
 
+        // erstellt ein neuen Spielstand und leitet an das Neue Spiel Weiter
         const startGame = (name, file, GameType) => {
             var ajax = new XMLHttpRequest();
             ajax.onreadystatechange = function() {
@@ -102,18 +104,24 @@
             ajax.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
 
-                    if(ajax.responseText =! " ") {
+                    // prüft ob die response leer ist
+                    if(ajax.responseText !== "") {
+    
+                        // Teilt den Response Text in ein Dictionary auf
                         const keyValuePairs = ajax.responseText.split('\n').map(pair => pair.split(':'));
                         const allPlayerWins = Object.fromEntries(keyValuePairs);
     
+                        // Teilt das dictionary in ein Array auf
                         var items = Object.keys(allPlayerWins).map(function(key) {
                             return [key, allPlayerWins[key]];
                         });
     
+                        // Sortiert das Array
                         items.sort(function(first, second) {
                             return second[1] - first[1];
                         });
     
+                        // Gibt die ersten 5 Personen vom Leaderboard aus
                         var Leaderboard=""
                         items.slice(0, 5).forEach((item) => {
                             if(item[0] !== ""){
@@ -131,6 +139,7 @@
             ajax.send("LoadLeaderBoard=1");
         }
 
+        // Zeigt die Aktionsbuttons An
         const showSingleplayer = () => {
             document.getElementById('singleplayerThingy').className = 'singleplayer';
             document.getElementById('SinglePlayerButton').className = 'hidden';
@@ -143,6 +152,7 @@
             document.getElementById('MultiPlayerButton').className = 'hidden';
         }
         
+        // Geht zurück auf das Hauptmenü
         const goBack = () => {
             document.getElementById('multiplayerThingy').className = 'hidden';
             document.getElementById('singleplayerThingy').className = 'hidden';
